@@ -1,0 +1,6 @@
+{
+  "name": "GazaCare - منصة الرعاية الصحية والسجلات الطبية",
+  "description": "منصة شاملة للسجلات الطبية الإلكترونية (EMR) لإدارة المستشفيات والأطباء والمرضى والمختبرات الطبية باللغة العربية",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
