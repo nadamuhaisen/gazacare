@@ -1,36 +1,55 @@
 import React, { useState, useEffect } from 'react';
 import { prescriptionService } from '../../services/prescriptionService';
+import { patientService } from '../../services/patientService';
 import { Card, Badge, Button, Modal } from '../../components/ui/Badge';
 import { Skeleton } from '../../components/ui/Skeleton';
 import { useNotification } from '../../context/NotificationContext';
-import { FileText, PlusCircle, QrCode, Printer, User, Calendar, Trash2, Save } from 'lucide-react';
+import { useAuth } from '../../context/AuthContext';
+import { FileText, PlusCircle, QrCode, Printer, User, Calendar, Trash2, Save, CheckCircle2 } from 'lucide-react';
 
 export const DoctorPrescriptions = () => {
+  const { user } = useAuth();
   const [prescriptions, setPrescriptions] = useState([]);
+  const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [newModalOpen, setNewModalOpen] = useState(false);
   const [selectedPrescription, setSelectedPrescription] = useState(null);
 
   const [form, setForm] = useState({
-    patientName: 'أحمد يوسف خليل',
-    patientMrn: 'P-10492',
+    patientId: '',
+    patientName: '',
+    patientMrn: '',
     diagnosis: '',
     medicines: [
-      { name: '', dosage: '', frequency: '', duration: '', instructions: '' }
+      { name: '', dosage: '', frequency: 'مرتين يومياً', duration: '7 أيام', instructions: 'بعد الأكل' }
     ]
   });
 
   const { addToast } = useNotification();
 
   useEffect(() => {
-    loadPrescriptions();
+    loadData();
   }, []);
 
-  const loadPrescriptions = async () => {
+  const loadData = async () => {
     setLoading(true);
     try {
-      const res = await prescriptionService.getPrescriptions();
-      if (res.success) setPrescriptions(res.data);
+      const [rxRes, patientsRes] = await Promise.all([
+        prescriptionService.getPrescriptions(),
+        patientService.getAll()
+      ]);
+
+      if (rxRes.success) setPrescriptions(rxRes.data);
+      if (patientsRes.success && patientsRes.data.length > 0) {
+        setPatients(patientsRes.data);
+        const firstP = patientsRes.data[0];
+        setForm(prev => ({
+          ...prev,
+          patientId: firstP.id,
+          patientName: firstP.name,
+          patientMrn: firstP.mrn
+        }));
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -38,10 +57,22 @@ export const DoctorPrescriptions = () => {
     }
   };
 
+  const handlePatientSelect = (patientId) => {
+    const p = patients.find(pat => pat.id === patientId);
+    if (p) {
+      setForm(prev => ({
+        ...prev,
+        patientId: p.id,
+        patientName: p.name,
+        patientMrn: p.mrn
+      }));
+    }
+  };
+
   const handleAddMedicineRow = () => {
     setForm({
       ...form,
-      medicines: [...form.medicines, { name: '', dosage: '', frequency: '', duration: '', instructions: '' }]
+      medicines: [...form.medicines, { name: '', dosage: '', frequency: 'مرة واحدة يومياً', duration: '7 أيام', instructions: 'بعد الأكل' }]
     });
   };
 
@@ -61,29 +92,44 @@ export const DoctorPrescriptions = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.diagnosis) {
-      addToast({ title: 'تنبيه', message: 'يرجى كتابة التشخيص', type: 'warning' });
+      addToast({ title: 'تنبيه', message: 'يرجى كتابة التشخيص الطبي', type: 'warning' });
+      return;
+    }
+
+    if (!form.medicines || form.medicines.length === 0 || !form.medicines[0].name) {
+      addToast({ title: 'تنبيه', message: 'يرجى إضافة دواء واحد على الأقل', type: 'warning' });
       return;
     }
 
     try {
       const payload = {
         ...form,
-        doctorName: 'د. يحيى خليل الأغا',
-        hospital: 'مجمع الشفاء الطبي',
+        doctorName: user?.fullName || user?.name || 'د. هالة منير النجار',
+        hospital: user?.hospital || 'مجمع الشفاء الطبي',
         status: 'active'
       };
-      const res = await prescriptionService.createPrescription(payload);
+
+      const res = await prescriptionService.create(payload);
       if (res.success) {
         setPrescriptions([res.data, ...prescriptions]);
         setNewModalOpen(false);
         addToast({
-          title: 'تم إصدار الوصفة بنجاح',
-          message: `رقم الوصفة: ${res.data.prescriptionNumber}`,
+          title: 'تم إصدار الوصفة الطبية بنجاح',
+          message: `رقم الوصفة: ${res.data.prescriptionNumber} - تم التحديث في ملف المريض فورياً`,
           type: 'success'
+        });
+        setForm({
+          patientId: patients[0]?.id || '',
+          patientName: patients[0]?.name || '',
+          patientMrn: patients[0]?.mrn || '',
+          diagnosis: '',
+          medicines: [
+            { name: '', dosage: '', frequency: 'مرتين يومياً', duration: '7 أيام', instructions: 'بعد الأكل' }
+          ]
         });
       }
     } catch {
-      addToast({ title: 'خطأ', message: 'فشل إصدار الوصفة', type: 'error' });
+      addToast({ title: 'خطأ', message: 'فشل إصدار الوصفة الطبية', type: 'error' });
     }
   };
 
@@ -98,7 +144,7 @@ export const DoctorPrescriptions = () => {
             الوصفات الطبية الإلكترونية الصادرة
           </h2>
           <p className="text-xs sm:text-sm text-slate-500 dark:text-slate-400">
-            إصدار ومتابعة الوصفات الدوائية المشفرة برمز الاستجابة السريع للربط مع الصيدليات
+            إصدار ومتابعة الوصفات الدوائية المشفرة برمز QR للربط مع الصيدليات وملفات المرضى
           </p>
         </div>
         <Button
@@ -131,7 +177,7 @@ export const DoctorPrescriptions = () => {
                     </Badge>
                   </div>
                   <p className="text-xs text-slate-500 mt-0.5">
-                    التشخيص: {rx.diagnosis} • رقم الوصفة: <span className="font-mono font-bold text-sky-600">{rx.prescriptionNumber}</span>
+                    التشخيص: {rx.diagnosis} • رقم الوصفة: <span className="font-mono font-bold text-sky-600">{rx.prescriptionNumber}</span> • التاريخ: {rx.date}
                   </p>
                 </div>
               </div>
@@ -143,7 +189,7 @@ export const DoctorPrescriptions = () => {
                   icon={QrCode}
                   onClick={() => setSelectedPrescription(rx)}
                 >
-                  معاينة وطباعة
+                  معاينة الوصفة ورمز QR
                 </Button>
               </div>
             </div>
@@ -162,107 +208,135 @@ export const DoctorPrescriptions = () => {
             </div>
           </Card>
         ))}
+
+        {prescriptions.length === 0 && (
+          <Card className="p-12 text-center text-slate-400 space-y-2">
+            <p>لا توجد وصفات طبية صادرة بعد.</p>
+            <Button variant="primary" size="sm" icon={PlusCircle} onClick={() => setNewModalOpen(true)}>
+              تحرير أول وصفة طبية
+            </Button>
+          </Card>
+        )}
       </div>
 
-      {/* New Prescription Creator Modal */}
+      {/* New Prescription Modal */}
       {newModalOpen && (
         <Modal
           isOpen={newModalOpen}
           onClose={() => setNewModalOpen(false)}
-          title="تحرير وصفة طبية جديدة"
+          title="تحرير وصفة طبية إلكترونية جديدة"
         >
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="grid grid-cols-2 gap-3">
+          <form onSubmit={handleSubmit} className="space-y-4 max-h-[80vh] overflow-y-auto pr-1">
+            {/* Patient Selector */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">اسم المريض</label>
-                <input
-                  type="text"
-                  required
-                  value={form.patientName}
-                  onChange={(e) => setForm({ ...form, patientName: e.target.value })}
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  اختر المريض <span className="text-rose-500">*</span>
+                </label>
+                <select
+                  value={form.patientId}
+                  onChange={(e) => handlePatientSelect(e.target.value)}
                   className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-white"
-                />
-              </div>
-              <div>
-                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">رقم الملف (MRN)</label>
-                <input
-                  type="text"
-                  required
-                  value={form.patientMrn}
-                  onChange={(e) => setForm({ ...form, patientMrn: e.target.value })}
-                  className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-white"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">التشخيص الطبي</label>
-              <input
-                type="text"
-                required
-                value={form.diagnosis}
-                onChange={(e) => setForm({ ...form, diagnosis: e.target.value })}
-                placeholder="التشخيص المقترن بهذه الوصفة"
-                className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-white"
-              />
-            </div>
-
-            {/* Medicines Builder */}
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">قائمة الأدوية الموصوفة</label>
-                <button
-                  type="button"
-                  onClick={handleAddMedicineRow}
-                  className="text-xs font-bold text-sky-600 hover:underline flex items-center gap-1 cursor-pointer"
                 >
-                  <PlusCircle className="w-3.5 h-3.5" />
-                  إضافة دواء آخر
-                </button>
+                  {patients.map(p => (
+                    <option key={p.id} value={p.id}>
+                      {p.name} ({p.mrn}) - {p.nationalId}
+                    </option>
+                  ))}
+                </select>
               </div>
 
-              {form.medicines.map((med, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2">
+              <div>
+                <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1">
+                  التشخيص الطبي (Diagnosis) <span className="text-rose-500">*</span>
+                </label>
+                <input
+                  type="text"
+                  required
+                  placeholder="مثال: التهاب حاد في القصبات الهوائية"
+                  value={form.diagnosis}
+                  onChange={(e) => setForm({ ...form, diagnosis: e.target.value })}
+                  className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-white"
+                />
+              </div>
+            </div>
+
+            {/* Medicines dynamic rows */}
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center justify-between">
+                <label className="text-xs font-bold text-slate-700 dark:text-slate-300">
+                  الأدوية الموصوفة والجرعات
+                </label>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  type="button"
+                  icon={PlusCircle}
+                  onClick={handleAddMedicineRow}
+                >
+                  إضافة دواء آخر
+                </Button>
+              </div>
+
+              {form.medicines.map((med, index) => (
+                <div
+                  key={index}
+                  className="p-3 rounded-2xl bg-slate-50 dark:bg-slate-800/60 border border-slate-200 dark:border-slate-700 space-y-2.5"
+                >
                   <div className="flex items-center justify-between">
-                    <span className="text-[11px] font-bold text-slate-500">الدواء #{idx + 1}</span>
+                    <span className="text-xs font-bold text-sky-600 dark:text-sky-400">
+                      دواء #{index + 1}
+                    </span>
                     {form.medicines.length > 1 && (
                       <button
                         type="button"
-                        onClick={() => handleRemoveMedicineRow(idx)}
-                        className="text-rose-500 hover:text-rose-700 text-xs"
+                        onClick={() => handleRemoveMedicineRow(index)}
+                        className="text-rose-500 hover:text-rose-700 text-xs p-1"
                       >
                         <Trash2 className="w-3.5 h-3.5" />
                       </button>
                     )}
                   </div>
-                  <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
+
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <input
                       type="text"
                       required
-                      placeholder="اسم الدواء"
+                      placeholder="اسم الدواء العلمي أو التجاري"
                       value={med.name}
-                      onChange={(e) => handleMedicineChange(idx, 'name', e.target.value)}
+                      onChange={(e) => handleMedicineChange(index, 'name', e.target.value)}
                       className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-white"
                     />
                     <input
                       type="text"
-                      placeholder="الجرعة (مثال: 500mg)"
+                      required
+                      placeholder="الجرعة (مثال: 500mg أو 5ml)"
                       value={med.dosage}
-                      onChange={(e) => handleMedicineChange(idx, 'dosage', e.target.value)}
+                      onChange={(e) => handleMedicineChange(index, 'dosage', e.target.value)}
                       className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-white"
                     />
+                  </div>
+
+                  <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
                     <input
                       type="text"
-                      placeholder="التكرار (مرتين يومياً)"
+                      placeholder="التكرار (مثال: مرتين يومياً)"
                       value={med.frequency}
-                      onChange={(e) => handleMedicineChange(idx, 'frequency', e.target.value)}
+                      onChange={(e) => handleMedicineChange(index, 'frequency', e.target.value)}
                       className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-white"
                     />
                     <input
                       type="text"
-                      placeholder="المدة (7 أيام)"
+                      placeholder="المدة (مثال: 7 أيام)"
                       value={med.duration}
-                      onChange={(e) => handleMedicineChange(idx, 'duration', e.target.value)}
+                      onChange={(e) => handleMedicineChange(index, 'duration', e.target.value)}
+                      className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-white"
+                    />
+                    <input
+                      type="text"
+                      placeholder="إرشادات الاستخدام"
+                      value={med.instructions}
+                      onChange={(e) => handleMedicineChange(index, 'instructions', e.target.value)}
                       className="px-2.5 py-1.5 text-xs rounded-lg border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 dark:text-white"
                     />
                   </div>
@@ -271,55 +345,61 @@ export const DoctorPrescriptions = () => {
             </div>
 
             <div className="flex justify-end gap-2 pt-4">
-              <Button variant="outline" size="sm" type="button" onClick={() => setNewModalOpen(false)}>إلغاء</Button>
-              <Button variant="primary" size="sm" type="submit" icon={Save}>اعتماد وتوليد الرمز</Button>
+              <Button variant="outline" size="sm" type="button" onClick={() => setNewModalOpen(false)}>
+                إلغاء
+              </Button>
+              <Button variant="primary" size="sm" type="submit" icon={Save}>
+                إصدار الوصفة وإرسالها لملف المريض
+              </Button>
             </div>
           </form>
         </Modal>
       )}
 
-      {/* Preview Modal */}
+      {/* Selected Prescription Details & QR View Modal */}
       {selectedPrescription && (
         <Modal
           isOpen={!!selectedPrescription}
           onClose={() => setSelectedPrescription(null)}
-          title="معاينة الوصفة المعتمدة"
+          title={`الوصفة الطبية: ${selectedPrescription.prescriptionNumber}`}
         >
-          <div className="p-4 border border-slate-200 dark:border-slate-700 rounded-2xl space-y-4">
-            <div className="flex justify-between border-b pb-2 text-xs">
+          <div className="space-y-4">
+            <div className="p-4 rounded-2xl bg-sky-50 dark:bg-sky-950/40 border border-sky-100 dark:border-sky-900/40 flex items-center justify-between">
               <div>
-                <strong>دولة فلسطين - وزارة الصحة</strong>
-                <p className="text-slate-400">{selectedPrescription.hospital}</p>
+                <h4 className="text-sm font-bold text-slate-900 dark:text-white">{selectedPrescription.patientName}</h4>
+                <p className="text-xs text-slate-500 font-mono">الملف الطبي: {selectedPrescription.patientMrn}</p>
+                <p className="text-xs text-slate-500 mt-1">التشخيص: {selectedPrescription.diagnosis}</p>
               </div>
-              <div className="font-mono text-left">
-                <strong>{selectedPrescription.prescriptionNumber}</strong>
-                <p className="text-slate-400">{selectedPrescription.date}</p>
+              <div className="p-2 bg-white rounded-xl shadow-xs border">
+                <QrCode className="w-16 h-16 text-slate-900" />
               </div>
             </div>
 
-            <div className="text-xs space-y-1 bg-slate-50 dark:bg-slate-800 p-3 rounded-xl">
-              <p><strong>المريض:</strong> {selectedPrescription.patientName} ({selectedPrescription.patientMrn})</p>
-              <p><strong>التشخيص:</strong> {selectedPrescription.diagnosis}</p>
-            </div>
-
-            <div className="space-y-1.5">
-              {selectedPrescription.medicines?.map((m, i) => (
-                <div key={i} className="p-2 border rounded-lg text-xs flex justify-between">
-                  <span>{i + 1}. {m.name} ({m.dosage})</span>
-                  <span className="font-bold">{m.frequency} • {m.duration}</span>
+            <div className="space-y-2">
+              <h5 className="text-xs font-bold text-slate-700 dark:text-slate-300">قائمة الأدوية الموصوفة:</h5>
+              {selectedPrescription.medicines?.map((m, idx) => (
+                <div key={idx} className="p-3 rounded-xl border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-900 flex justify-between items-center text-xs">
+                  <div>
+                    <span className="font-bold text-slate-900 dark:text-white block">{m.name}</span>
+                    <span className="text-slate-400">{m.frequency} • {m.duration} • {m.instructions}</span>
+                  </div>
+                  <Badge variant="primary" size="sm">{m.dosage}</Badge>
                 </div>
               ))}
             </div>
 
-            <div className="flex justify-between items-center pt-3 border-t text-xs">
-              <QrCode className="w-8 h-8 text-slate-700" />
-              <span>الطبيب: {selectedPrescription.doctorName} (ختم إلكتروني)</span>
+            <div className="text-[11px] text-slate-400 text-center pt-2">
+              الوصفة صادرة ومعتمدة إلكترونياً من {selectedPrescription.doctorName || 'الطبيب المعالج'} - {selectedPrescription.hospital || 'مجمع الشفاء الطبي'}
             </div>
-          </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button variant="outline" size="sm" onClick={() => setSelectedPrescription(null)}>إغلاق</Button>
-            <Button variant="primary" size="sm" icon={Printer} onClick={() => window.print()}>طباعة</Button>
+            <div className="flex justify-end gap-2 pt-2">
+              <Button variant="outline" size="sm" onClick={() => setSelectedPrescription(null)}>
+                إغلاق
+              </Button>
+              <Button variant="primary" size="sm" icon={Printer} onClick={() => window.print()}>
+                طباعة الوصفة
+              </Button>
+            </div>
           </div>
         </Modal>
       )}

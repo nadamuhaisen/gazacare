@@ -7,6 +7,7 @@ import { laboratoryService } from '../../services/laboratoryService';
 import { Card, Badge, Button } from '../../components/ui/Badge';
 import { VitalSigns } from '../../components/common/VitalSigns';
 import { Skeleton } from '../../components/ui/Skeleton';
+import { useNotification } from '../../context/NotificationContext';
 import {
   Calendar,
   Pill,
@@ -28,6 +29,7 @@ import { Link, useNavigate } from 'react-router-dom';
 export const PatientDashboard = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { addToast } = useNotification();
   const [loading, setLoading] = useState(true);
   const [patientData, setPatientData] = useState(null);
   const [appointments, setAppointments] = useState([]);
@@ -35,29 +37,48 @@ export const PatientDashboard = () => {
   const [labResults, setLabResults] = useState([]);
 
   useEffect(() => {
-    const fetchData = async () => {
-      setLoading(true);
-      try {
-        const [profileRes, appRes, medRes, labRes] = await Promise.all([
-          patientService.getProfile(),
-          appointmentService.getAppointments(),
-          patientService.getMedications(),
-          laboratoryService.getLabResults()
-        ]);
-
-        if (profileRes.success) setPatientData(profileRes.data);
-        if (appRes.success) setAppointments(appRes.data);
-        if (medRes.success) setMedications(medRes.data);
-        if (labRes.success) setLabResults(labRes.data);
-      } catch (err) {
-        console.error('Error loading patient dashboard:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
     fetchData();
-  }, []);
+  }, [user]);
+
+  const fetchData = async () => {
+    setLoading(true);
+    try {
+      const [profileRes, appRes, medRes, labRes] = await Promise.all([
+        patientService.getProfile(),
+        appointmentService.getAppointments(),
+        patientService.getMedications(user?.id),
+        laboratoryService.getLabResults()
+      ]);
+
+      if (profileRes.success) setPatientData(profileRes.data);
+      if (appRes.success) setAppointments(appRes.data);
+      if (medRes.success) setMedications(medRes.data);
+      if (labRes.success) setLabResults(labRes.data);
+    } catch (err) {
+      console.error('Error loading patient dashboard:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleSaveVital = async (newVitalRecord) => {
+    try {
+      const res = await patientService.updateVitals(user?.id, newVitalRecord);
+      if (res.success) {
+        addToast({
+          title: 'تم تسجيل المؤشرات الحيوية',
+          message: 'تم حفظ القياسات وتحديث سجلك الصحي بنجاح',
+          type: 'success'
+        });
+        setPatientData(prev => ({
+          ...prev,
+          vitalSigns: res.data
+        }));
+      }
+    } catch {
+      addToast({ title: 'خطأ', message: 'فشل حفظ المؤشرات الحيوية', type: 'error' });
+    }
+  };
 
   if (loading) {
     return (
@@ -91,21 +112,25 @@ export const PatientDashboard = () => {
             <div>
               <div className="flex items-center gap-2">
                 <h1 className="text-xl sm:text-2xl font-black">
-                  مرحباً، {patientData?.name || user?.name}
+                  مرحباً، {patientData?.name || user?.fullName || user?.name}
                 </h1>
                 <span className="px-2.5 py-0.5 rounded-full bg-white/20 text-xs font-bold">
                   {patientData?.bloodType || 'O+'}
                 </span>
               </div>
               <p className="text-xs sm:text-sm text-sky-100 mt-1">
-                رقم الملف الطبي الوطني: <span className="font-mono font-bold">{patientData?.mrn || 'P-10492'}</span> | {patientData?.age || 45} عاماً
+                رقم الملف الطبي الموحد (MRN): <span className="font-mono font-bold">{patientData?.mrn || 'P-10492'}</span> | {patientData?.age || 35} عاماً
               </p>
               <div className="flex flex-wrap items-center gap-2 mt-2">
-                {patientData?.chronicConditions?.map((c, i) => (
-                  <span key={i} className="px-2 py-0.5 rounded-md bg-amber-500/25 border border-amber-300/30 text-[11px] font-semibold text-amber-100">
-                    {c}
-                  </span>
-                ))}
+                {patientData?.chronicConditions && patientData.chronicConditions.length > 0 ? (
+                  patientData.chronicConditions.map((c, i) => (
+                    <span key={i} className="px-2 py-0.5 rounded-md bg-amber-500/25 border border-amber-300/30 text-[11px] font-semibold text-amber-100">
+                      {c}
+                    </span>
+                  ))
+                ) : (
+                  <span className="text-[11px] text-sky-200">سجل صحي نشط - بدون أمراض مزمنة</span>
+                )}
               </div>
             </div>
           </div>
@@ -133,11 +158,17 @@ export const PatientDashboard = () => {
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-bold text-slate-900 dark:text-white flex items-center gap-2">
             <HeartPulse className="w-5 h-5 text-rose-500" />
-            <span>المؤشرات والعلامات الحيوية الحالية</span>
+            <span>المؤشرات والعلامات الحيوية</span>
           </h3>
-          <span className="text-xs text-slate-400">آخر تحديث: قبل ساعتين (مجمع الشفاء)</span>
+          <span className="text-xs text-slate-400">
+            {patientData?.vitalSigns?.history?.length > 0 ? 'متابعة المؤشرات في الوقت الفعلي' : 'مؤشرات مصفّرة - بانتظار تسجيل أول قراءة'}
+          </span>
         </div>
-        <VitalSigns vitals={patientData?.vitalSigns} showChart={false} />
+        <VitalSigns
+          vitals={patientData?.vitalSigns}
+          showChart={true}
+          onAddVital={handleSaveVital}
+        />
       </div>
 
       {/* Middle Grid: Next Appointment, Active Meds, Recent Labs */}
@@ -329,16 +360,18 @@ export const PatientDashboard = () => {
                 جهة الاتصال في حالات الطوارئ
               </h5>
               <p className="text-xs text-slate-600 dark:text-slate-400">
-                {patientData?.emergencyContact?.name} ({patientData?.emergencyContact?.relation})
+                {patientData?.emergencyContact?.name || 'لم يُحدد بعد'} ({patientData?.emergencyContact?.relation || '---'})
               </p>
             </div>
           </div>
-          <a
-            href={`tel:${patientData?.emergencyContact?.phone}`}
-            className="px-3 py-1.5 rounded-xl bg-sky-600 text-white text-xs font-bold hover:bg-sky-700 transition-colors"
-          >
-            اتصال فوري
-          </a>
+          {patientData?.emergencyContact?.phone && patientData.emergencyContact.phone !== '---' && (
+            <a
+              href={`tel:${patientData.emergencyContact.phone}`}
+              className="px-3 py-1.5 rounded-xl bg-sky-600 text-white text-xs font-bold hover:bg-sky-700 transition-colors"
+            >
+              اتصال فوري
+            </a>
+          )}
         </div>
       </div>
     </div>
