@@ -58,38 +58,26 @@ export const Navbar = () => {
             {/* Theme Toggle */}
             <button
               onClick={toggleTheme}
-              className="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors"
+              className="p-2.5 rounded-xl text-slate-600 dark:text-slate-300 hover:bg-slate-100 dark:hover:bg-slate-800 transition-colors cursor-pointer"
               aria-label="تغيير المظهر"
             >
               {isDark ? <Sun className="w-5 h-5 text-amber-400" /> : <Moon className="w-5 h-5" />}
             </button>
 
-            {isAuthenticated ? (
-              <Button
-                variant="primary"
-                size="md"
-                icon={UserCheck}
-                onClick={() => navigate(getDashboardPath(role))}
-              >
-                لوحة التحكم
-              </Button>
-            ) : (
-              <>
-                <Link
-                  to="/login"
-                  className="text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 px-4 py-2"
-                >
-                  تسجيل الدخول
-                </Link>
-                <Button
-                  variant="secondary"
-                  size="md"
-                  onClick={() => navigate('/register')}
-                >
-                  ابدأ الآن
-                </Button>
-              </>
-            )}
+            <Link
+              to="/login"
+              className="text-sm font-bold text-slate-700 dark:text-slate-200 hover:text-sky-600 dark:hover:text-sky-400 px-3.5 py-2 transition-colors"
+            >
+              تسجيل الدخول
+            </Link>
+            <Button
+              variant="primary"
+              size="md"
+              onClick={() => navigate('/register')}
+              className="font-bold shadow-md shadow-emerald-600/20"
+            >
+              إنشاء حساب جديد
+            </Button>
           </div>
 
           {/* Mobile Menu Button */}
@@ -138,7 +126,7 @@ export const Navbar = () => {
               onClick={() => setMobileMenuOpen(false)}
               className="text-center py-2.5 rounded-xl bg-emerald-600 text-white font-bold text-sm shadow-md"
             >
-              ابدأ الآن مجاناً
+              إنشاء حساب جديد
             </Link>
           </div>
         </div>
