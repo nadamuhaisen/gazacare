@@ -31,7 +31,7 @@ export const Footer = () => {
               <li><a href="#hero" className="hover:text-white transition-colors">الرئيسية</a></li>
               <li><a href="#features" className="hover:text-white transition-colors">المميزات</a></li>
               <li><a href="#how-it-works" className="hover:text-white transition-colors">كيف يعمل</a></li>
-              <li><a href="#platform-preview" className="hover:text-white transition-colors">بوابات النظام</a></li>
+              <li><a href="#why-gazacare" className="hover:text-white transition-colors">لماذا غزة كير</a></li>
               <li><a href="#faq" className="hover:text-white transition-colors">الأسئلة الشائعة</a></li>
             </ul>
           </div>

@@ -15,7 +15,6 @@ export const Navbar = () => {
     { name: 'الرئيسية', href: '#hero' },
     { name: 'المميزات', href: '#features' },
     { name: 'كيف يعمل', href: '#how-it-works' },
-    { name: 'معاينة المنظومة', href: '#platform-preview' },
     { name: 'لماذا غزة كير', href: '#why-gazacare' },
     { name: 'الأسئلة الشائعة', href: '#faq' },
     { name: 'تواصل معنا', href: '#footer' }

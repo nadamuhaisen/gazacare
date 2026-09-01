@@ -8,11 +8,41 @@ export const authService = {
       return response;
     } catch {
       // Fallback for standalone frontend development
-      const email = credentials.email?.toLowerCase() || '';
+      const email = credentials.email?.toLowerCase().trim() || '';
       let user = mockUsers.doctor;
-      if (email.includes('patient')) user = mockUsers.patient;
-      else if (email.includes('manager')) user = mockUsers.hospitalManager;
-      else if (email.includes('lab')) user = mockUsers.labAnalyst;
+
+      if (
+        email.includes('patient') ||
+        email.includes('مريض') ||
+        email.includes('مراجع') ||
+        email.includes('p-10492') ||
+        email.includes('401928374') ||
+        credentials.role === 'PATIENT'
+      ) {
+        user = mockUsers.patient;
+      } else if (
+        email.includes('manager') ||
+        email.includes('admin') ||
+        email.includes('مدير') ||
+        email.includes('مستشفى') ||
+        credentials.role === 'HOSPITAL_MANAGER'
+      ) {
+        user = mockUsers.hospitalManager;
+      } else if (
+        email.includes('lab') ||
+        email.includes('مختبر') ||
+        email.includes('تحاليل') ||
+        credentials.role === 'LAB_ANALYST'
+      ) {
+        user = mockUsers.labAnalyst;
+      } else if (
+        email.includes('doctor') ||
+        email.includes('طبيب') ||
+        email.includes('دكتور') ||
+        credentials.role === 'DOCTOR'
+      ) {
+        user = mockUsers.doctor;
+      }
 
       return {
         success: true,

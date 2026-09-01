@@ -4,7 +4,6 @@ import { Hero } from '../../components/landing/Hero';
 import { Stats } from '../../components/landing/Stats';
 import { Features } from '../../components/landing/Features';
 import { HowItWorks } from '../../components/landing/HowItWorks';
-import { PlatformPreview } from '../../components/landing/PlatformPreview';
 import { WhyGazaCare } from '../../components/landing/WhyGazaCare';
 import { Testimonials } from '../../components/landing/Testimonials';
 import { FAQ } from '../../components/landing/FAQ';
@@ -20,7 +19,6 @@ export const LandingPage = () => {
         <Stats />
         <Features />
         <HowItWorks />
-        <PlatformPreview />
         <WhyGazaCare />
         <Testimonials />
         <FAQ />

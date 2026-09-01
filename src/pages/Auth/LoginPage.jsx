@@ -156,7 +156,91 @@ export const LoginPage = () => {
         </Button>
       </form>
 
-      <div className="text-center pt-6 mt-6 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
+      {/* Quick Demo Access Buttons */}
+      <div className="mt-6 pt-5 border-t border-slate-100 dark:border-slate-800">
+        <p className="text-[11px] font-bold text-slate-400 text-center mb-2.5">
+          ⚡ تسجيل دخول تجريبي سريع بنقرة واحدة (Quick Demo):
+        </p>
+        <div className="grid grid-cols-2 gap-2">
+          <button
+            type="button"
+            onClick={async () => {
+              setEmail('patient@gazacare.ps');
+              setPassword('password123');
+              setLoading(true);
+              const res = await login('patient@gazacare.ps', 'password123', 'PATIENT');
+              setLoading(false);
+              if (res.success) {
+                addToast({ title: 'مرحباً أحمد يوسف', message: 'تم الدخول لبوابة المريض', type: 'success' });
+                navigate('/patient/dashboard');
+              }
+            }}
+            className="p-2 rounded-xl bg-emerald-50 dark:bg-emerald-950/50 hover:bg-emerald-100 border border-emerald-200 dark:border-emerald-800 text-emerald-800 dark:text-emerald-300 text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer"
+          >
+            <span>🧑‍⚕️ مريض / مراجع</span>
+            <span className="text-[10px] text-emerald-600 font-mono">patient@gazacare.ps</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              setEmail('doctor@gazacare.ps');
+              setPassword('password123');
+              setLoading(true);
+              const res = await login('doctor@gazacare.ps', 'password123', 'DOCTOR');
+              setLoading(false);
+              if (res.success) {
+                addToast({ title: 'مرحباً د. هالة النجار', message: 'تم الدخول لبوابة الطبيب', type: 'success' });
+                navigate('/doctor/dashboard');
+              }
+            }}
+            className="p-2 rounded-xl bg-sky-50 dark:bg-sky-950/50 hover:bg-sky-100 border border-sky-200 dark:border-sky-800 text-sky-800 dark:text-sky-300 text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer"
+          >
+            <span>🩺 طبيب معالج</span>
+            <span className="text-[10px] text-sky-600 font-mono">doctor@gazacare.ps</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              setEmail('manager@gazacare.ps');
+              setPassword('password123');
+              setLoading(true);
+              const res = await login('manager@gazacare.ps', 'password123', 'HOSPITAL_MANAGER');
+              setLoading(false);
+              if (res.success) {
+                addToast({ title: 'مرحباً د. صبحي سكيك', message: 'تم الدخول لإدارة المستشفى', type: 'success' });
+                navigate('/hospital-manager/dashboard');
+              }
+            }}
+            className="p-2 rounded-xl bg-purple-50 dark:bg-purple-950/50 hover:bg-purple-100 border border-purple-200 dark:border-purple-800 text-purple-800 dark:text-purple-300 text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer"
+          >
+            <span>🏥 إدارة المستشفى</span>
+            <span className="text-[10px] text-purple-600 font-mono">manager@gazacare.ps</span>
+          </button>
+
+          <button
+            type="button"
+            onClick={async () => {
+              setEmail('lab@gazacare.ps');
+              setPassword('password123');
+              setLoading(true);
+              const res = await login('lab@gazacare.ps', 'password123', 'LAB_ANALYST');
+              setLoading(false);
+              if (res.success) {
+                addToast({ title: 'مرحباً أ. خليل المصري', message: 'تم الدخول لبوابة المختبر', type: 'success' });
+                navigate('/lab-analyst/dashboard');
+              }
+            }}
+            className="p-2 rounded-xl bg-amber-50 dark:bg-amber-950/50 hover:bg-amber-100 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300 text-xs font-bold transition-all text-center flex flex-col items-center gap-0.5 cursor-pointer"
+          >
+            <span>🔬 المختبر والتحاليل</span>
+            <span className="text-[10px] text-amber-600 font-mono">lab@gazacare.ps</span>
+          </button>
+        </div>
+      </div>
+
+      <div className="text-center pt-5 mt-5 border-t border-slate-100 dark:border-slate-800 text-xs text-slate-500">
         <span>ليس لديك حساب على المنظومة؟ </span>
         <Link to="/register" className="font-bold text-emerald-600 dark:text-emerald-400 hover:underline">
           إنشاء حساب جديد
