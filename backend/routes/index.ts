@@ -10,6 +10,7 @@ import medicalRecordRoutes from './medicalRecordRoutes.js';
 import radiologyRoutes from './radiologyRoutes.js';
 import notificationRoutes from './notificationRoutes.js';
 import auditRoutes from './auditRoutes.js';
+import contactRoutes from './contactRoutes.js';
 
 import * as authController from '../controllers/authController.js';
 import * as patientController from '../controllers/patientController.js';
@@ -21,6 +22,7 @@ import * as hospitalController from '../controllers/hospitalController.js';
 import * as mrController from '../controllers/medicalRecordController.js';
 import * as radController from '../controllers/radiologyController.js';
 import * as notifController from '../controllers/notificationController.js';
+import * as contactController from '../controllers/contactController.js';
 import { optionalAuth } from '../middleware/auth.js';
 import { auditAccess } from '../middleware/auditLogger.js';
 
@@ -39,6 +41,7 @@ apiRouter.use('/prescriptions', prescriptionRoutes);
 apiRouter.use('/lab', laboratoryRoutes);
 apiRouter.use('/radiology', radiologyRoutes);
 apiRouter.use('/notifications', notificationRoutes);
+apiRouter.use('/contact', contactRoutes);
 apiRouter.use('/', hospitalRoutes);
 apiRouter.use('/', medicalRecordRoutes);
 apiRouter.use('/', auditRoutes);
@@ -121,5 +124,10 @@ apiRouter.post('/radiology/request.php', optionalAuth, auditAccess('Radiology', 
 apiRouter.get('/notifications/index.php', optionalAuth, notifController.getNotifications);
 apiRouter.put('/notifications/read.php', optionalAuth, notifController.markNotificationRead);
 apiRouter.put('/notifications/read-all.php', optionalAuth, notifController.markAllNotificationsRead);
+
+// Contact & Support
+apiRouter.post('/contact/submit.php', optionalAuth, contactController.submitContactMessage);
+apiRouter.get('/contact/hotlines.php', contactController.getEmergencyHotlines);
+apiRouter.get('/contact/messages.php', optionalAuth, auditAccess('ContactMessages', 'READ_ALL'), contactController.getContactMessages);
 
 export default apiRouter;

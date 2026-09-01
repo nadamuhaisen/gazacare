@@ -36,6 +36,24 @@ export interface AuditLogEntry {
   details?: any;
 }
 
+export interface ContactMessage {
+  id: string;
+  ticketNumber: string;
+  name: string;
+  email: string;
+  phone?: string;
+  nationalId?: string;
+  category: string;
+  priority: 'normal' | 'urgent' | 'emergency';
+  subject: string;
+  message: string;
+  hospital?: string;
+  status: 'pending' | 'in_progress' | 'resolved';
+  ipAddress?: string;
+  createdAt: string;
+  responseNotes?: string;
+}
+
 export class DatabaseStore {
   private static instance: DatabaseStore;
 
@@ -56,6 +74,7 @@ export class DatabaseStore {
   timeline: any[] = [];
   stats: any = clone(mockHospitalStats);
   auditLogs: AuditLogEntry[] = [];
+  contactMessages: ContactMessage[] = [];
 
   constructor() {
     this.seedInitialData();
@@ -108,6 +127,39 @@ export class DatabaseStore {
     this.staff = clone(mockStaff);
     this.notifications = clone(mockNotifications);
     this.timeline = clone(mockMedicalTimeline);
+
+    // Initial seed contact message
+    this.contactMessages = [
+      {
+        id: 'MSG-101',
+        ticketNumber: 'TKT-2026-8801',
+        name: 'م. يوسف عبد الله',
+        email: 'yousef.a@gazacare.ps',
+        phone: '0599123456',
+        category: 'technical_support',
+        priority: 'normal',
+        subject: 'استفسار حول ربط نظام العيادات الخارجية بالسجل الموحد',
+        message: 'السلام عليكم، نود التنسيق الفني لربط عيادة الرمال التخصصية بالمنظومة المركزية ومزامنة ملفات المرضى.',
+        hospital: 'مجمع الشفاء الطبي',
+        status: 'in_progress',
+        createdAt: new Date(Date.now() - 24 * 3600 * 1000).toISOString(),
+        responseNotes: 'تم التواصل وتحديد موعد فني للمعاينة'
+      },
+      {
+        id: 'MSG-102',
+        ticketNumber: 'TKT-2026-8802',
+        name: 'د. سامي أبو هلال',
+        email: 'dr.sami@moh.ps',
+        phone: '0598765432',
+        category: 'medical_consultation',
+        priority: 'urgent',
+        subject: 'طلب نقل ملف طبي عاجل لحالة حرجة',
+        message: 'يرجى تفعيل صلاحية الوصول الفوري للسجل الطبي الموحد للمريض في قسم جراحة القلب بمستشفى ناصر.',
+        hospital: 'مستشفى ناصر المجمع الطبي',
+        status: 'pending',
+        createdAt: new Date().toISOString()
+      }
+    ];
 
     // Initial audit log
     this.auditLogs.push({
@@ -502,6 +554,73 @@ export class DatabaseStore {
       }
     });
     return true;
+  }
+
+  // ==========================================
+  // CONTACT & SUPPORT MESSAGES
+  // ==========================================
+  getContactMessages(status?: string, category?: string) {
+    let list = [...this.contactMessages];
+    if (status && status !== 'الكل') {
+      list = list.filter((m) => m.status === status);
+    }
+    if (category && category !== 'الكل') {
+      list = list.filter((m) => m.category === category);
+    }
+    return list;
+  }
+
+  getContactMessageById(id: string) {
+    return this.contactMessages.find((m) => m.id === id || m.ticketNumber === id) || null;
+  }
+
+  saveContactMessage(data: Partial<ContactMessage>, ipAddress?: string): ContactMessage {
+    const ticketNum = 'TKT-2026-' + Math.floor(1000 + Math.random() * 9000);
+    const newMsg: ContactMessage = {
+      id: 'MSG-' + Date.now(),
+      ticketNumber: ticketNum,
+      name: data.name || 'زائر',
+      email: data.email || '',
+      phone: data.phone || '',
+      nationalId: data.nationalId,
+      category: data.category || 'general_inquiry',
+      priority: data.priority || 'normal',
+      subject: data.subject || 'رسالة استفسار',
+      message: data.message || '',
+      hospital: data.hospital || 'وزارة الصحة / مجمع الشفاء الطبي',
+      status: 'pending',
+      ipAddress: ipAddress || '127.0.0.1',
+      createdAt: new Date().toISOString()
+    };
+
+    this.contactMessages.unshift(newMsg);
+
+    // If urgent or emergency, add notification for hospital manager / admin
+    if (newMsg.priority === 'urgent' || newMsg.priority === 'emergency') {
+      this.notifications.unshift({
+        id: 'notif_' + Date.now(),
+        type: newMsg.priority === 'emergency' ? 'critical' : 'warning',
+        title: `تذكرة تواصل عاجلة: ${newMsg.subject}`,
+        message: `تم استلام رسالة عاجلة من (${newMsg.name}) بخصوص (${newMsg.subject}). رقم التذكرة: ${newMsg.ticketNumber}`,
+        date: 'الآن',
+        timestamp: new Date().toISOString(),
+        read: false,
+        targetRole: 'HOSPITAL_MANAGER',
+        link: '/contact'
+      });
+    }
+
+    return newMsg;
+  }
+
+  updateContactMessageStatus(id: string, status: 'pending' | 'in_progress' | 'resolved', notes?: string) {
+    const msg = this.contactMessages.find((m) => m.id === id || m.ticketNumber === id);
+    if (msg) {
+      msg.status = status;
+      if (notes) msg.responseNotes = notes;
+      return msg;
+    }
+    return null;
   }
 }
 
