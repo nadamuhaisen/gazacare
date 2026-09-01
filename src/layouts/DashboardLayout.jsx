@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { Outlet, NavLink, useNavigate, useLocation } from 'react-router-dom';
 import { useAuth, ROLES } from '../context/AuthContext';
 import { useTheme } from '../context/ThemeContext';
+import { useNotifications } from '../context/NotificationContext';
 import { NotificationCenter } from '../components/common/NotificationCenter';
 import { OfflineBanner } from '../components/common/OfflineBanner';
 import {
@@ -28,21 +29,43 @@ import {
   ShieldCheck,
   Stethoscope,
   HeartPulse,
-  ClipboardList
+  ClipboardList,
+  ArrowLeftRight
 } from 'lucide-react';
 
 export const DashboardLayout = () => {
-  const { user, role, logout } = useAuth();
+  const { user, role, switchRole, logout } = useAuth();
   const { isDark, toggleTheme } = useTheme();
+  const { unreadCount } = useNotifications();
   const navigate = useNavigate();
   const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [roleSwitcherOpen, setRoleSwitcherOpen] = useState(false);
   const [globalSearch, setGlobalSearch] = useState('');
 
   const handleLogout = () => {
     logout();
     navigate('/login');
+  };
+
+  const getRoleBasePath = () => {
+    switch (role) {
+      case ROLES.PATIENT: return 'patient';
+      case ROLES.DOCTOR: return 'doctor';
+      case ROLES.HOSPITAL_MANAGER: return 'hospital-manager';
+      case ROLES.LAB_ANALYST: return 'lab-analyst';
+      default: return 'doctor';
+    }
+  };
+
+  const handleRoleChange = (newRole) => {
+    switchRole(newRole);
+    setRoleSwitcherOpen(false);
+    if (newRole === ROLES.PATIENT) navigate('/patient/dashboard');
+    else if (newRole === ROLES.DOCTOR) navigate('/doctor/dashboard');
+    else if (newRole === ROLES.HOSPITAL_MANAGER) navigate('/hospital-manager/dashboard');
+    else if (newRole === ROLES.LAB_ANALYST) navigate('/lab-analyst/dashboard');
   };
 
   // Define sidebar navigation items based on role
@@ -57,7 +80,7 @@ export const DashboardLayout = () => {
           { name: 'الوصفات الطبية', path: '/patient/prescriptions', icon: FileText },
           { name: 'نتائج المختبر', path: '/patient/labs', icon: FlaskConical },
           { name: 'المواعيد والحجوزات', path: '/patient/appointments', icon: Calendar },
-          { name: 'الإشعارات والتنبيهات', path: '/patient/notifications', icon: Bell },
+          { name: 'الإشعارات والتنبيهات', path: '/patient/notifications', icon: Bell, badge: unreadCount },
           { name: 'الإعدادات', path: '/patient/settings', icon: Settings }
         ];
 
@@ -69,7 +92,7 @@ export const DashboardLayout = () => {
           { name: 'الوصفات الطبية', path: '/doctor/prescriptions', icon: FileText },
           { name: 'طلبات المختبر', path: '/doctor/laboratory', icon: FlaskConical },
           { name: 'الأشعة والتصوير', path: '/doctor/radiology', icon: Activity },
-          { name: 'الإشعارات', path: '/doctor/notifications', icon: Bell },
+          { name: 'الإشعارات', path: '/doctor/notifications', icon: Bell, badge: unreadCount },
           { name: 'الإعدادات', path: '/doctor/settings', icon: Settings }
         ];
 
@@ -84,6 +107,7 @@ export const DashboardLayout = () => {
           { name: 'المواعيد والعيادات', path: '/hospital-manager/appointments', icon: Calendar },
           { name: 'التقارير السريرية', path: '/hospital-manager/reports', icon: FileText },
           { name: 'الإحصائيات والتحليلات', path: '/hospital-manager/statistics', icon: BarChart3 },
+          { name: 'الإشعارات', path: '/hospital-manager/notifications', icon: Bell, badge: unreadCount },
           { name: 'الإعدادات', path: '/hospital-manager/settings', icon: Settings }
         ];
 
@@ -94,7 +118,7 @@ export const DashboardLayout = () => {
           { name: 'النتائج المعتمدة', path: '/lab-analyst/results', icon: ShieldCheck },
           { name: 'المرضى والمراجعين', path: '/lab-analyst/patients', icon: Users },
           { name: 'التقارير المخبرية', path: '/lab-analyst/reports', icon: BarChart3 },
-          { name: 'الإشعارات', path: '/lab-analyst/notifications', icon: Bell },
+          { name: 'الإشعارات', path: '/lab-analyst/notifications', icon: Bell, badge: unreadCount },
           { name: 'الإعدادات', path: '/lab-analyst/settings', icon: Settings }
         ];
 
@@ -149,18 +173,57 @@ export const DashboardLayout = () => {
                 <NavLink
                   key={item.path}
                   to={item.path}
-                  className={`flex items-center gap-3 px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
+                  className={`flex items-center justify-between px-3.5 py-2.5 rounded-xl text-sm font-medium transition-all ${
                     isActive
                       ? 'bg-sky-500 text-white font-semibold shadow-xs shadow-sky-500/30'
                       : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800 hover:text-slate-900 dark:hover:text-white'
                   }`}
                 >
-                  <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500'}`} />
-                  <span>{item.name}</span>
+                  <div className="flex items-center gap-3">
+                    <Icon className={`w-4 h-4 shrink-0 ${isActive ? 'text-white' : 'text-slate-400 dark:text-slate-500'}`} />
+                    <span>{item.name}</span>
+                  </div>
+                  {item.badge > 0 && (
+                    <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
+                      isActive 
+                        ? 'bg-white text-sky-600' 
+                        : 'bg-rose-500 text-white animate-pulse'
+                    }`}>
+                      {item.badge}
+                    </span>
+                  )}
                 </NavLink>
               );
             })}
           </nav>
+
+          {/* Quick Role Switcher Bar inside Sidebar */}
+          <div className="px-3 py-2 border-t border-slate-100 dark:border-slate-800/80 bg-slate-50/50 dark:bg-slate-900/50">
+            <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold mb-1.5 px-1">
+              <span>تبديل الدور السريع:</span>
+              <ArrowLeftRight className="w-3 h-3 text-sky-500" />
+            </div>
+            <div className="grid grid-cols-2 gap-1">
+              {[
+                { r: ROLES.DOCTOR, label: 'طبيب' },
+                { r: ROLES.PATIENT, label: 'مريض' },
+                { r: ROLES.HOSPITAL_MANAGER, label: 'مستشفى' },
+                { r: ROLES.LAB_ANALYST, label: 'مختبر' }
+              ].map(({ r, label }) => (
+                <button
+                  key={r}
+                  onClick={() => handleRoleChange(r)}
+                  className={`px-2 py-1 rounded-lg text-[11px] font-bold transition-all text-center cursor-pointer ${
+                    role === r
+                      ? 'bg-sky-600 text-white shadow-xs'
+                      : 'bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 hover:bg-sky-50 dark:hover:bg-slate-700'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
+          </div>
 
           {/* User Info & Logout Card */}
           <div className="p-3 border-t border-slate-100 dark:border-slate-800">
@@ -211,24 +274,59 @@ export const DashboardLayout = () => {
               <nav className="flex-1 py-4 space-y-1 overflow-y-auto">
                 {navLinks.map((item) => {
                   const Icon = item.icon;
-                  const isActive = location.pathname === item.path;
+                  const isActive = location.pathname === item.path || (item.path !== '/' && location.pathname.startsWith(item.path + '/'));
                   return (
                     <NavLink
                       key={item.path}
                       to={item.path}
                       onClick={() => setMobileMenuOpen(false)}
-                      className={`flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium ${
+                      className={`flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-medium ${
                         isActive
                           ? 'bg-sky-500 text-white font-semibold'
                           : 'text-slate-600 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                       }`}
                     >
-                      <Icon className="w-4 h-4 shrink-0" />
-                      <span>{item.name}</span>
+                      <div className="flex items-center gap-3">
+                        <Icon className="w-4 h-4 shrink-0" />
+                        <span>{item.name}</span>
+                      </div>
+                      {item.badge > 0 && (
+                        <span className="text-[10px] font-bold px-1.5 py-0.5 rounded-full bg-rose-500 text-white">
+                          {item.badge}
+                        </span>
+                      )}
                     </NavLink>
                   );
                 })}
               </nav>
+
+              {/* Quick Role switch in mobile drawer */}
+              <div className="py-2 border-t border-slate-100 dark:border-slate-800 mb-2">
+                <p className="text-[11px] font-bold text-slate-400 mb-1.5">التبديل بين الأدوار:</p>
+                <div className="grid grid-cols-2 gap-1.5">
+                  {[
+                    { r: ROLES.DOCTOR, label: 'طبيب' },
+                    { r: ROLES.PATIENT, label: 'مريض' },
+                    { r: ROLES.HOSPITAL_MANAGER, label: 'مستشفى' },
+                    { r: ROLES.LAB_ANALYST, label: 'مختبر' }
+                  ].map(({ r, label }) => (
+                    <button
+                      key={r}
+                      onClick={() => {
+                        handleRoleChange(r);
+                        setMobileMenuOpen(false);
+                      }}
+                      className={`py-1 rounded-lg text-xs font-bold ${
+                        role === r
+                          ? 'bg-sky-600 text-white'
+                          : 'bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300'
+                      }`}
+                    >
+                      {label}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <button
                 onClick={handleLogout}
@@ -261,7 +359,13 @@ export const DashboardLayout = () => {
                     type="text"
                     value={globalSearch}
                     onChange={(e) => setGlobalSearch(e.target.value)}
-                    placeholder="بحث سريع عن مريض، ملف طبي، فحص..."
+                    onKeyDown={(e) => {
+                      if (e.key === 'Enter' && globalSearch.trim()) {
+                        const targetPath = role === ROLES.PATIENT ? '/patient/medical-record' : `/${getRoleBasePath()}/patients`;
+                        navigate(targetPath);
+                      }
+                    }}
+                    placeholder="بحث سريع عن مريض، ملف طبي، فحص... (اضغط Enter)"
                     className="w-full pr-9 pl-4 py-1.5 text-xs bg-slate-100/80 dark:bg-slate-800/80 border border-transparent rounded-xl focus:bg-white dark:focus:bg-slate-900 focus:border-sky-500 focus:outline-none dark:text-white"
                   />
                 </div>
@@ -299,7 +403,7 @@ export const DashboardLayout = () => {
                   </button>
 
                   {userDropdownOpen && (
-                    <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg py-1.5 z-50 text-xs">
+                    <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl shadow-lg py-1.5 z-50 text-xs animate-in fade-in zoom-in-95 duration-100">
                       <div className="px-3 py-2 border-b border-slate-100 dark:border-slate-800">
                         <p className="font-bold text-slate-900 dark:text-white truncate">{user?.name}</p>
                         <p className="text-[11px] text-slate-400 truncate">{user?.email}</p>
@@ -307,9 +411,10 @@ export const DashboardLayout = () => {
                       <button
                         onClick={() => {
                           setUserDropdownOpen(false);
-                          navigate('/profile');
+                          const profilePath = role === ROLES.PATIENT ? '/patient/profile' : `/${getRoleBasePath()}/settings`;
+                          navigate(profilePath);
                         }}
-                        className="w-full text-right px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-2"
+                        className="w-full text-right px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer"
                       >
                         <User className="w-3.5 h-3.5 text-slate-400" />
                         <span>الملف الشخصي</span>
@@ -317,9 +422,9 @@ export const DashboardLayout = () => {
                       <button
                         onClick={() => {
                           setUserDropdownOpen(false);
-                          navigate('/settings');
+                          navigate(`/${getRoleBasePath()}/settings`);
                         }}
-                        className="w-full text-right px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-2"
+                        className="w-full text-right px-3 py-2 hover:bg-slate-50 dark:hover:bg-slate-800 text-slate-700 dark:text-slate-300 flex items-center gap-2 cursor-pointer"
                       >
                         <Settings className="w-3.5 h-3.5 text-slate-400" />
                         <span>إعدادات النظام</span>
@@ -330,7 +435,7 @@ export const DashboardLayout = () => {
                           setUserDropdownOpen(false);
                           handleLogout();
                         }}
-                        className="w-full text-right px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center gap-2 font-semibold"
+                        className="w-full text-right px-3 py-2 hover:bg-rose-50 dark:hover:bg-rose-950/40 text-rose-600 dark:text-rose-400 flex items-center gap-2 font-semibold cursor-pointer"
                       >
                         <LogOut className="w-3.5 h-3.5" />
                         <span>تسجيل الخروج</span>

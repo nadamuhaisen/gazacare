@@ -48,6 +48,10 @@ import { LabResults } from './pages/LabAnalyst/LabResults';
 import { LabPatients } from './pages/LabAnalyst/LabPatients';
 import { LabReports } from './pages/LabAnalyst/LabReports';
 
+// Common Settings & Notifications
+import { SettingsPage } from './pages/Common/SettingsPage';
+import { NotificationsPage } from './pages/Common/NotificationsPage';
+
 // Role Constants
 import { ROLES } from './context/AuthContext';
 import { ShieldAlert, Home } from 'lucide-react';
@@ -115,6 +119,8 @@ export const AppRoutes = () => {
         <Route path="prescriptions" element={<PatientPrescriptions />} />
         <Route path="labs" element={<PatientLabs />} />
         <Route path="appointments" element={<PatientAppointments />} />
+        <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
 
       {/* Doctor Portal Routes */}
@@ -135,6 +141,9 @@ export const AppRoutes = () => {
         <Route path="prescriptions" element={<DoctorPrescriptions />} />
         <Route path="laboratory" element={<DoctorLaboratory />} />
         <Route path="radiology" element={<DoctorRadiology />} />
+        <Route path="profile" element={<SettingsPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
 
       {/* Hospital Manager Portal Routes */}
@@ -158,6 +167,9 @@ export const AppRoutes = () => {
         <Route path="appointments" element={<HospitalAppointments />} />
         <Route path="reports" element={<HospitalReports />} />
         <Route path="statistics" element={<HospitalStatistics />} />
+        <Route path="profile" element={<SettingsPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
 
       {/* Lab Analyst Portal Routes */}
@@ -177,6 +189,9 @@ export const AppRoutes = () => {
         <Route path="results" element={<LabResults />} />
         <Route path="patients" element={<LabPatients />} />
         <Route path="reports" element={<LabReports />} />
+        <Route path="profile" element={<SettingsPage />} />
+        <Route path="notifications" element={<NotificationsPage />} />
+        <Route path="settings" element={<SettingsPage />} />
       </Route>
 
       {/* Errors and Catch-All */}

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth, ROLES } from '../../context/AuthContext';
-import { User, Stethoscope, Building2, FlaskConical, ArrowLeft, CheckCircle2, Eye, Sparkles } from 'lucide-react';
+import { User, Stethoscope, Building2, FlaskConical, ArrowLeft, CheckCircle2, Eye, Sparkles, PlayCircle, Image as ImageIcon } from 'lucide-react';
 import { Button, Badge } from '../ui/Badge';
 
 import doctorImg from '../../assets/images/doctor_dashboard_ui_1788269466273.jpg';
@@ -9,8 +9,16 @@ import patientImg from '../../assets/images/patient_portal_ui_1788269504145.jpg'
 import hospitalImg from '../../assets/images/hospital_capacity_ui_1788269484741.jpg';
 import labImg from '../../assets/images/lab_system_ui_1788269519940.jpg';
 
+import {
+  InteractiveDoctorPreview,
+  InteractivePatientPreview,
+  InteractiveHospitalPreview,
+  InteractiveLabPreview
+} from './InteractiveRoleDemos';
+
 export const PlatformPreview = () => {
   const [activeTab, setActiveTab] = useState(ROLES.DOCTOR);
+  const [viewMode, setViewMode] = useState('interactive'); // 'interactive' or 'screenshot'
   const { switchRole } = useAuth();
   const navigate = useNavigate();
 
@@ -30,7 +38,8 @@ export const PlatformPreview = () => {
       badge: 'الاستخدام الأكثر شيوعاً',
       stats: '142 مريض نشط | 8 مواعيد اليوم',
       image: doctorImg,
-      caption: 'لقطة شاشة حية من واجهة الطبيب: متابعة المؤشرات الحيوية والتشخيص السريري'
+      caption: 'لقطة شاشة حية من واجهة الطبيب: متابعة المؤشرات الحيوية والتشخيص السريري',
+      interactiveComponent: <InteractiveDoctorPreview />
     },
     [ROLES.PATIENT]: {
       title: 'بوابة المريض والملف الصحي',
@@ -39,7 +48,8 @@ export const PlatformPreview = () => {
       badge: 'سهل الاستخدام وآمن',
       stats: 'ملف طبي إلكتروني موحد P-10492',
       image: patientImg,
-      caption: 'لقطة شاشة حية من واجهة المريض: البطاقة الطبية الرقمية وجدول الأدوية والمواعيد'
+      caption: 'لقطة شاشة حية من واجهة المريض: البطاقة الطبية الرقمية وجدول الأدوية والمواعيد',
+      interactiveComponent: <InteractivePatientPreview />
     },
     [ROLES.HOSPITAL_MANAGER]: {
       title: 'بوابة إدارة المستشفى والموارد',
@@ -48,7 +58,8 @@ export const PlatformPreview = () => {
       badge: 'تحكم ورقابة شاملة',
       stats: '450 سرير إجمالي | نسبة إشغال 91.1%',
       image: hospitalImg,
-      caption: 'لقطة شاشة حية من لوحة الإدارة: شبكة الأسرّة الحية ومستوى الأكسجين وبنك الدم'
+      caption: 'لقطة شاشة حية من لوحة الإدارة: شبكة الأسرّة الحية ومستوى الأكسجين وبنك الدم',
+      interactiveComponent: <InteractiveHospitalPreview />
     },
     [ROLES.LAB_ANALYST]: {
       title: 'بوابة المختبر والتحاليل الطبية',
@@ -57,7 +68,8 @@ export const PlatformPreview = () => {
       badge: 'دقة وسرعة في النتائج',
       stats: '6 طلبات قيد الفحص | 1 تنبيه حرج',
       image: labImg,
-      caption: 'لقطة شاشة حية من نظام المختبر: إدخال الفحوصات والتنبيه التلقائي بالقيم الحرجة'
+      caption: 'لقطة شاشة حية من نظام المختبر: إدخال الفحوصات والتنبيه التلقائي بالقيم الحرجة',
+      interactiveComponent: <InteractiveLabPreview />
     }
   };
 
@@ -66,20 +78,48 @@ export const PlatformPreview = () => {
   return (
     <section id="platform-preview" className="py-20 bg-slate-50 dark:bg-slate-950">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center max-w-2xl mx-auto mb-12 space-y-3">
+        <div className="text-center max-w-2xl mx-auto mb-8 space-y-3">
           <span className="text-xs font-bold text-sky-600 dark:text-sky-400 bg-sky-50 dark:bg-sky-950/60 px-3 py-1 rounded-full border border-sky-200 dark:border-sky-800 inline-flex items-center gap-1.5">
             <Sparkles className="w-3.5 h-3.5" />
-            <span>معاينة واجهات النظام كصور حية</span>
+            <span>محاكي الواجهات التفاعلية الحية</span>
           </span>
           <h2 className="text-2xl sm:text-4xl font-black text-slate-900 dark:text-white">
-            واجهات نظام غزة كير (UI Gallery)
+            واجهات نظام غزة كير التفاعلية
           </h2>
           <p className="text-sm sm:text-base text-slate-600 dark:text-slate-400">
-            تصفح تصميم واجهات النظام والشاشات التفاعلية المصممة خصيصاً لكل دور صحي.
+            جرب وظائف كل دور صحي مباشرة من خلال المحاكي التفاعلي أو تصفح لقطات الشاشة.
           </p>
         </div>
 
-        {/* Tab Selectors */}
+        {/* View mode toggle (Interactive Live vs Screenshot Image) */}
+        <div className="flex justify-center mb-6">
+          <div className="inline-flex p-1 rounded-2xl bg-slate-200 dark:bg-slate-900 border border-slate-300 dark:border-slate-800">
+            <button
+              onClick={() => setViewMode('interactive')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                viewMode === 'interactive'
+                  ? 'bg-sky-600 text-white shadow-md'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <PlayCircle className="w-4 h-4 text-emerald-400" />
+              <span>محاكي تفاعلي حي (جرب بنفسك)</span>
+            </button>
+            <button
+              onClick={() => setViewMode('screenshot')}
+              className={`flex items-center gap-2 px-4 py-2 rounded-xl text-xs sm:text-sm font-bold transition-all cursor-pointer ${
+                viewMode === 'screenshot'
+                  ? 'bg-sky-600 text-white shadow-md'
+                  : 'text-slate-600 dark:text-slate-400 hover:text-slate-900 dark:hover:text-white'
+              }`}
+            >
+              <ImageIcon className="w-4 h-4" />
+              <span>لقطة شاشة ثابتة (Screenshot)</span>
+            </button>
+          </div>
+        </div>
+
+        {/* Role Tab Selectors */}
         <div className="flex flex-wrap items-center justify-center gap-2 mb-10 max-w-2xl mx-auto">
           {[
             { key: ROLES.DOCTOR, label: 'واجهة الطبيب', icon: Stethoscope },
@@ -106,11 +146,11 @@ export const PlatformPreview = () => {
           })}
         </div>
 
-        {/* Showcase Card with Image Preview */}
+        {/* Showcase Card with Interactive & Image Preview */}
         <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-3xl p-6 sm:p-10 shadow-sm max-w-6xl mx-auto space-y-8">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
             {/* Details Side */}
-            <div className="lg:col-span-5 space-y-4">
+            <div className="lg:col-span-4 space-y-4">
               <div className="flex items-center gap-2">
                 <Badge variant="primary">{currentRole.badge}</Badge>
                 <span className="text-xs text-slate-400 font-medium">{currentRole.stats}</span>
@@ -131,38 +171,44 @@ export const PlatformPreview = () => {
                 ))}
               </div>
 
-              <div className="pt-4 flex flex-wrap gap-3">
+              <div className="pt-4 flex flex-col gap-2.5">
                 <Button
                   variant="primary"
                   size="md"
                   onClick={() => handleLaunch(activeTab)}
-                  className="px-6"
+                  className="w-full justify-center font-bold shadow-md shadow-sky-600/20"
                 >
-                  <span>فتح الواجهة التفاعلية الحية</span>
+                  <span>الدخول المباشر للوحة الحقيقية الكاملة</span>
                   <ArrowLeft className="w-4 h-4 mr-1" />
                 </Button>
+                <p className="text-[11px] text-slate-500 text-center">
+                  سينقلك فوراً للوحة التحكم بكامل بياناتها وصلاحياتها
+                </p>
               </div>
             </div>
 
-            {/* Visual Image Preview Side */}
-            <div className="lg:col-span-7">
-              <div className="relative group overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl bg-slate-950">
-                <img
-                  src={currentRole.image}
-                  alt={currentRole.title}
-                  referrerPolicy="no-referrer"
-                  className="w-full h-auto object-cover rounded-2xl transition-transform duration-500 group-hover:scale-[1.02]"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
-                  <div className="flex items-center gap-2 text-white text-xs font-semibold">
-                    <Eye className="w-4 h-4 text-sky-400" />
-                    <span>{currentRole.caption}</span>
+            {/* Interactive or Image Preview Side */}
+            <div className="lg:col-span-8">
+              {viewMode === 'interactive' ? (
+                <div className="animate-fade-in">
+                  {currentRole.interactiveComponent}
+                </div>
+              ) : (
+                <div className="relative group overflow-hidden rounded-2xl border border-slate-200 dark:border-slate-800 shadow-xl bg-slate-950 animate-fade-in">
+                  <img
+                    src={currentRole.image}
+                    alt={currentRole.title}
+                    referrerPolicy="no-referrer"
+                    className="w-full h-auto object-cover rounded-2xl transition-transform duration-500 group-hover:scale-[1.02]"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-slate-950/80 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 flex items-end p-4">
+                    <div className="flex items-center gap-2 text-white text-xs font-semibold">
+                      <Eye className="w-4 h-4 text-sky-400" />
+                      <span>{currentRole.caption}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-              <p className="text-center text-xs text-slate-500 dark:text-slate-400 mt-2 font-medium">
-                {currentRole.caption}
-              </p>
+              )}
             </div>
           </div>
         </div>

@@ -52,15 +52,23 @@ export const NotificationProvider = ({ children }) => {
     });
   };
 
+  const clearAll = () => {
+    setNotifications([]);
+  };
+
+  const unreadCount = notifications.filter(n => !n.read).length;
+
   return (
     <NotificationContext.Provider
       value={{
         notifications,
+        unreadCount,
         toasts,
         addToast,
         removeToast,
         markAsRead,
         markAllAsRead,
+        clearAll,
         addNotification
       }}
     >
@@ -74,13 +82,17 @@ export const useNotification = () => {
   if (!context) {
     return {
       notifications: [],
+      unreadCount: 0,
       toasts: [],
       addToast: () => {},
       removeToast: () => {},
       markAsRead: () => {},
       markAllAsRead: () => {},
+      clearAll: () => {},
       addNotification: () => {}
     };
   }
   return context;
 };
+
+export const useNotifications = useNotification;

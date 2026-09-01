@@ -1,7 +1,7 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Button, Badge } from '../ui/Badge';
-import { Shield, Sparkles, ArrowLeft, CheckCircle2, Stethoscope, Activity, Building2, FlaskConical, Lock } from 'lucide-react';
+import { Button } from '../ui/Badge';
+import { Sparkles, ArrowLeft, CheckCircle2 } from 'lucide-react';
 
 export const Hero = () => {
   const navigate = useNavigate();
@@ -36,7 +36,7 @@ export const Hero = () => {
               variant="primary"
               size="lg"
               onClick={() => navigate('/register')}
-              className="w-full sm:w-auto px-8"
+              className="w-full sm:w-auto px-8 font-bold shadow-lg shadow-emerald-600/20"
             >
               <span>انضم للمنظومة الآن</span>
               <ArrowLeft className="w-5 h-5 mr-1" />
@@ -45,7 +45,7 @@ export const Hero = () => {
               variant="outline"
               size="lg"
               onClick={() => navigate('/login')}
-              className="w-full sm:w-auto px-8"
+              className="w-full sm:w-auto px-8 font-bold"
             >
               <span>تسجيل الدخول للنظام</span>
             </Button>
