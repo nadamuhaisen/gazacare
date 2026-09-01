@@ -40,67 +40,81 @@ export const PatientPrescriptions = () => {
       </div>
 
       {/* Prescriptions List */}
-      <div className="space-y-4">
-        {prescriptions.map((rx) => (
-          <Card key={rx.id} className="p-5 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
-              <div className="flex items-center gap-3">
-                <div className="w-11 h-11 rounded-2xl bg-sky-50 dark:bg-sky-950 text-sky-600 flex items-center justify-center font-mono font-bold text-sm">
-                  Rx
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                      وصفة رقم: <span className="font-mono">{rx.prescriptionNumber}</span>
-                    </h4>
-                    <Badge variant={rx.status === 'active' ? 'success' : 'default'} size="sm">
-                      {rx.status === 'active' ? 'نشطة' : 'مصروفة'}
-                    </Badge>
+      {prescriptions.length > 0 ? (
+        <div className="space-y-4">
+          {prescriptions.map((rx) => (
+            <Card key={rx.id} className="p-5 hover:border-slate-300 dark:hover:border-slate-700 transition-colors">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100 dark:border-slate-800">
+                <div className="flex items-center gap-3">
+                  <div className="w-11 h-11 rounded-2xl bg-sky-50 dark:bg-sky-950 text-sky-600 flex items-center justify-center font-mono font-bold text-sm">
+                    Rx
                   </div>
-                  <p className="text-xs text-slate-400 mt-0.5">
-                    التشخيص: {rx.diagnosis}
-                  </p>
+                  <div>
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                        وصفة رقم: <span className="font-mono">{rx.prescriptionNumber}</span>
+                      </h4>
+                      <Badge variant={rx.status === 'active' ? 'success' : 'default'} size="sm">
+                        {rx.status === 'active' ? 'نشطة' : 'مصروفة'}
+                      </Badge>
+                    </div>
+                    <p className="text-xs text-slate-400 mt-0.5">
+                      التشخيص: {rx.diagnosis}
+                    </p>
+                  </div>
+                </div>
+
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={QrCode}
+                    onClick={() => setSelectedPrescription(rx)}
+                  >
+                    معاينة وطباعة الوصفة
+                  </Button>
                 </div>
               </div>
 
-              <div className="flex flex-wrap items-center gap-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  icon={QrCode}
-                  onClick={() => setSelectedPrescription(rx)}
-                >
-                  معاينة وطباعة الوصفة
-                </Button>
-              </div>
-            </div>
-
-            {/* Medicines in prescription */}
-            <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-              {rx.medicines?.map((m, idx) => (
-                <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/60">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-xs text-slate-900 dark:text-white">{m.name}</span>
-                    <span className="text-[10px] text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded font-semibold">{m.dosage}</span>
+              {/* Medicines in prescription */}
+              <div className="pt-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {rx.medicines?.map((m, idx) => (
+                  <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/60">
+                    <div className="flex items-center justify-between">
+                      <span className="font-bold text-xs text-slate-900 dark:text-white">{m.name}</span>
+                      <span className="text-[10px] text-emerald-600 bg-emerald-50 dark:bg-emerald-950 px-1.5 py-0.5 rounded font-semibold">{m.dosage}</span>
+                    </div>
+                    <p className="text-[11px] text-slate-500 mt-1">{m.frequency} • {m.duration}</p>
                   </div>
-                  <p className="text-[11px] text-slate-500 mt-1">{m.frequency} • {m.duration}</p>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
 
-            <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800/60 flex flex-wrap items-center justify-between text-xs text-slate-400">
-              <span className="flex items-center gap-1">
-                <User className="w-3.5 h-3.5" />
-                الطبيب المعالج: {rx.doctorName}
-              </span>
-              <span className="flex items-center gap-1">
-                <Calendar className="w-3.5 h-3.5" />
-                تاريخ الإصدار: {rx.date}
-              </span>
-            </div>
-          </Card>
-        ))}
-      </div>
+              <div className="pt-3 mt-3 border-t border-slate-100 dark:border-slate-800/60 flex flex-wrap items-center justify-between text-xs text-slate-400">
+                <span className="flex items-center gap-1">
+                  <User className="w-3.5 h-3.5" />
+                  الطبيب المعالج: {rx.doctorName}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Calendar className="w-3.5 h-3.5" />
+                  تاريخ الإصدار: {rx.date}
+                </span>
+              </div>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card className="p-12 text-center flex flex-col items-center justify-center space-y-4">
+          <div className="w-16 h-16 rounded-3xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center font-mono font-bold text-xl">
+            Rx
+          </div>
+          <div className="space-y-1 max-w-sm">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">لا توجد وصفات طبية صادرة</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              ملفك الطبي جديد ولا يحتوي على وصفات طبية سابقة. ستظهر هنا الوصفات الإلكترونية المعتمدة فور صرفها من الطبيب المعالج.
+            </p>
+          </div>
+        </Card>
+      )}
 
       {/* Prescription Preview Modal */}
       {selectedPrescription && (

@@ -1,7 +1,48 @@
 import api from './api';
 import { mockDoctors, mockPatients, mockAppointments, mockLabRequests } from '../data/mockData';
 
+const getCurrentUser = () => {
+  try {
+    const raw = localStorage.getItem('gazacare_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
 export const doctorService = {
+  getDashboard: async () => {
+    try {
+      return await api.get('/doctor/dashboard.php');
+    } catch {
+      const currentUser = getCurrentUser();
+      if (currentUser?.isNewUser) {
+        return {
+          success: true,
+          data: {
+            stats: {
+              totalPatients: 0,
+              todayAppointments: 0,
+              pendingLabs: 0,
+              criticalAlerts: 0
+            }
+          }
+        };
+      }
+      return {
+        success: true,
+        data: {
+          stats: {
+            totalPatients: 142,
+            todayAppointments: 8,
+            pendingLabs: 6,
+            criticalAlerts: 1
+          }
+        }
+      };
+    }
+  },
+
   getAll: async (params) => {
     try {
       return await api.get('/doctors/index.php', { params });

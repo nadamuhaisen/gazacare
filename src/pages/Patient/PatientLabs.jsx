@@ -40,76 +40,90 @@ export const PatientLabs = () => {
       </div>
 
       {/* Lab Results Table / Cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        {labResults.map((lab) => {
-          const hasAbnormal = lab.parameters?.some(p => p.status === 'high' || p.status === 'low');
-          return (
-            <Card key={lab.id} className="p-5 flex flex-col justify-between space-y-4">
-              <div className="space-y-3">
-                <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center">
-                      <FlaskConical className="w-5 h-5" />
-                    </div>
-                    <div>
-                      <h4 className="text-sm font-bold text-slate-900 dark:text-white">
-                        {lab.testName}
-                      </h4>
-                      <p className="text-xs text-slate-400">
-                        {lab.hospital} • {lab.completedDate}
-                      </p>
-                    </div>
-                  </div>
-                  <Badge variant={hasAbnormal ? 'warning' : 'success'} size="sm">
-                    {hasAbnormal ? 'يوجد قيم غير طبيعية' : 'سليم وطبيعي'}
-                  </Badge>
-                </div>
-
-                {/* Parameters list preview */}
-                <div className="space-y-2">
-                  {lab.parameters?.map((param, idx) => {
-                    const isAbnormal = param.status !== 'normal';
-                    return (
-                      <div
-                        key={idx}
-                        className={`p-2.5 rounded-xl border flex items-center justify-between text-xs ${
-                          isAbnormal
-                            ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60'
-                            : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800'
-                        }`}
-                      >
-                        <div>
-                          <span className="font-bold text-slate-900 dark:text-white">{param.name}</span>
-                          <span className="text-[10px] text-slate-400 block">
-                            المعدل الطبيعي: {param.normalRange}
-                          </span>
-                        </div>
-                        <div className="text-left">
-                          <span className={`font-mono font-bold ${isAbnormal ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>
-                            {param.value} {param.unit}
-                          </span>
-                        </div>
+      {labResults.length > 0 ? (
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          {labResults.map((lab) => {
+            const hasAbnormal = lab.parameters?.some(p => p.status === 'high' || p.status === 'low');
+            return (
+              <Card key={lab.id} className="p-5 flex flex-col justify-between space-y-4">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 rounded-2xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center">
+                        <FlaskConical className="w-5 h-5" />
                       </div>
-                    );
-                  })}
-                </div>
-              </div>
+                      <div>
+                        <h4 className="text-sm font-bold text-slate-900 dark:text-white">
+                          {lab.testName}
+                        </h4>
+                        <p className="text-xs text-slate-400">
+                          {lab.hospital} • {lab.completedDate}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge variant={hasAbnormal ? 'warning' : 'success'} size="sm">
+                      {hasAbnormal ? 'يوجد قيم غير طبيعية' : 'سليم وطبيعي'}
+                    </Badge>
+                  </div>
 
-              <div className="pt-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  icon={Eye}
-                  className="w-full"
-                  onClick={() => setSelectedLab(lab)}
-                >
-                  معاينة التقرير المخبري الكامل
-                </Button>
-              </div>
-            </Card>
-          );
-        })}
-      </div>
+                  {/* Parameters list preview */}
+                  <div className="space-y-2">
+                    {lab.parameters?.map((param, idx) => {
+                      const isAbnormal = param.status !== 'normal';
+                      return (
+                        <div
+                          key={idx}
+                          className={`p-2.5 rounded-xl border flex items-center justify-between text-xs ${
+                            isAbnormal
+                              ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60'
+                              : 'bg-slate-50 dark:bg-slate-800/40 border-slate-100 dark:border-slate-800'
+                          }`}
+                        >
+                          <div>
+                            <span className="font-bold text-slate-900 dark:text-white">{param.name}</span>
+                            <span className="text-[10px] text-slate-400 block">
+                              المعدل الطبيعي: {param.normalRange}
+                            </span>
+                          </div>
+                          <div className="text-left">
+                            <span className={`font-mono font-bold ${isAbnormal ? 'text-rose-600 dark:text-rose-400' : 'text-slate-900 dark:text-white'}`}>
+                              {param.value} {param.unit}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div className="pt-2">
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    icon={Eye}
+                    className="w-full"
+                    onClick={() => setSelectedLab(lab)}
+                  >
+                    معاينة التقرير المخبري الكامل
+                  </Button>
+                </div>
+              </Card>
+            );
+          })}
+        </div>
+      ) : (
+        <Card className="p-12 text-center flex flex-col items-center justify-center space-y-4">
+          <div className="w-16 h-16 rounded-3xl bg-amber-50 dark:bg-amber-950/60 text-amber-600 flex items-center justify-center">
+            <FlaskConical className="w-8 h-8" />
+          </div>
+          <div className="space-y-1 max-w-sm">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">لا توجد تحاليل مخبرية مسجلة</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              حسابك الطبي جديد ولا يحتوي على فحوصات دم أو تحاليل سريرية مسجلة. ستظهر نتائج الفحوصات المخبرية هنا فور صدورها من المختبر المركزي.
+            </p>
+          </div>
+        </Card>
+      )}
 
       {/* Lab Report Detail Modal */}
       {selectedLab && (

@@ -91,6 +91,24 @@ const defaultLabResults = [
 let localRequests = [...mockLabRequests];
 let localResults = [...defaultLabResults];
 
+const getCurrentUser = () => {
+  try {
+    const raw = localStorage.getItem('gazacare_user');
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+const getUserLabs = (userId) => {
+  try {
+    const raw = localStorage.getItem(`gazacare_user_labs_${userId}`);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+};
+
 export const laboratoryService = {
   getLabStats: async () => {
     return {
@@ -124,6 +142,10 @@ export const laboratoryService = {
       const res = await api.get('/lab/results.php', { params });
       return res;
     } catch {
+      const currentUser = getCurrentUser();
+      if (currentUser?.isNewUser && currentUser?.role === 'PATIENT') {
+        return { success: true, data: getUserLabs(currentUser.id) };
+      }
       return { success: true, data: localResults };
     }
   },

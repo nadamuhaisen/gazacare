@@ -77,17 +77,23 @@ export const PatientMedicalRecord = () => {
             </Badge>
           </div>
           <div className="space-y-2.5">
-            {record?.surgeries?.map((s, idx) => (
-              <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
-                <div>
-                  <h5 className="text-xs font-bold text-slate-900 dark:text-white">{s.name}</h5>
-                  <p className="text-[11px] text-slate-400">{s.hospital}</p>
+            {record?.surgeries && record.surgeries.length > 0 ? (
+              record.surgeries.map((s, idx) => (
+                <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">{s.name}</h5>
+                    <p className="text-[11px] text-slate-400">{s.hospital}</p>
+                  </div>
+                  <span className="text-xs font-mono font-bold text-sky-600 bg-sky-50 dark:bg-sky-950 px-2 py-0.5 rounded-md">
+                    {s.year}
+                  </span>
                 </div>
-                <span className="text-xs font-mono font-bold text-sky-600 bg-sky-50 dark:bg-sky-950 px-2 py-0.5 rounded-md">
-                  {s.year}
-                </span>
+              ))
+            ) : (
+              <div className="py-6 text-center text-xs text-slate-400">
+                لا توجد عمليات جراحية مسجلة في التاريخ المرضي.
               </div>
-            ))}
+            )}
           </div>
         </Card>
 
@@ -97,20 +103,28 @@ export const PatientMedicalRecord = () => {
               <Heart className="w-4 h-4 text-emerald-600" />
               <span>الأمراض المزمنة والعوامل الوراثية</span>
             </h4>
-            <Badge variant="success" size="sm">مستقر</Badge>
+            <Badge variant="success" size="sm">
+              {record?.chronicDiseases?.length > 0 ? 'مستقر' : 'سليم'}
+            </Badge>
           </div>
           <div className="space-y-2.5">
-            {record?.chronicDiseases?.map((d, idx) => (
-              <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
-                <div>
-                  <h5 className="text-xs font-bold text-slate-900 dark:text-white">{d.name}</h5>
-                  <p className="text-[11px] text-slate-400">تاريخ التشخيص: {d.since}</p>
+            {record?.chronicDiseases && record.chronicDiseases.length > 0 ? (
+              record.chronicDiseases.map((d, idx) => (
+                <div key={idx} className="p-3 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/60 flex items-center justify-between">
+                  <div>
+                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">{d.name}</h5>
+                    <p className="text-[11px] text-slate-400">تاريخ التشخيص: {d.since}</p>
+                  </div>
+                  <Badge variant={d.status === 'تحت السيطرة' ? 'success' : 'warning'} size="sm">
+                    {d.status}
+                  </Badge>
                 </div>
-                <Badge variant={d.status === 'تحت السيطرة' ? 'success' : 'warning'} size="sm">
-                  {d.status}
-                </Badge>
+              ))
+            ) : (
+              <div className="py-6 text-center text-xs text-slate-400">
+                لا توجد أمراض مزمنة مسجلة - الحالة الصحية العامة ممتازة.
               </div>
-            ))}
+            )}
           </div>
         </Card>
       </div>

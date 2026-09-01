@@ -52,59 +52,73 @@ export const PatientMedications = () => {
       </div>
 
       {/* Active Medications Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {medications.map((med) => (
-          <Card key={med.id} className="p-5 flex flex-col justify-between space-y-4 hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors">
-            <div className="space-y-3">
-              <div className="flex items-start justify-between gap-2">
-                <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center shrink-0">
-                  <Pill className="w-5 h-5" />
+      {medications.length > 0 ? (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          {medications.map((med) => (
+            <Card key={med.id} className="p-5 flex flex-col justify-between space-y-4 hover:border-emerald-200 dark:hover:border-emerald-800 transition-colors">
+              <div className="space-y-3">
+                <div className="flex items-start justify-between gap-2">
+                  <div className="w-10 h-10 rounded-2xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center shrink-0">
+                    <Pill className="w-5 h-5" />
+                  </div>
+                  <Badge variant={med.status === 'active' ? 'success' : 'default'} size="sm">
+                    {med.status === 'active' ? 'نشط ومستمر' : 'متوقف'}
+                  </Badge>
                 </div>
-                <Badge variant={med.status === 'active' ? 'success' : 'default'} size="sm">
-                  {med.status === 'active' ? 'نشط ومستمر' : 'متوقف'}
-                </Badge>
+
+                <div>
+                  <h4 className="text-base font-bold text-slate-900 dark:text-white">
+                    {med.name}
+                  </h4>
+                  <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
+                    الجرعة: {med.dosage}
+                  </p>
+                </div>
+
+                <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl">
+                  <div className="flex items-center gap-2">
+                    <Clock className="w-3.5 h-3.5 text-slate-400" />
+                    <span><strong>التكرار:</strong> {med.frequency}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Calendar className="w-3.5 h-3.5 text-slate-400" />
+                    <span><strong>المدة:</strong> {med.duration}</span>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <User className="w-3.5 h-3.5 text-slate-400" />
+                    <span><strong>الطبيب:</strong> {med.prescribedBy}</span>
+                  </div>
+                </div>
+
+                {med.instructions && (
+                  <div className="text-xs text-slate-500 bg-amber-50 dark:bg-amber-950/30 p-2.5 rounded-lg border border-amber-200/60 dark:border-amber-900/60">
+                    💡 <strong>تعليمات:</strong> {med.instructions}
+                  </div>
+                )}
               </div>
 
-              <div>
-                <h4 className="text-base font-bold text-slate-900 dark:text-white">
-                  {med.name}
-                </h4>
-                <p className="text-xs text-emerald-600 dark:text-emerald-400 font-semibold mt-0.5">
-                  الجرعة: {med.dosage}
-                </p>
-              </div>
-
-              <div className="space-y-1.5 text-xs text-slate-600 dark:text-slate-400 bg-slate-50 dark:bg-slate-800/50 p-3 rounded-xl">
-                <div className="flex items-center gap-2">
-                  <Clock className="w-3.5 h-3.5 text-slate-400" />
-                  <span><strong>التكرار:</strong> {med.frequency}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Calendar className="w-3.5 h-3.5 text-slate-400" />
-                  <span><strong>المدة:</strong> {med.duration}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <User className="w-3.5 h-3.5 text-slate-400" />
-                  <span><strong>الطبيب:</strong> {med.prescribedBy}</span>
-                </div>
-              </div>
-
-              {med.instructions && (
-                <div className="text-xs text-slate-500 bg-amber-50 dark:bg-amber-950/30 p-2.5 rounded-lg border border-amber-200/60 dark:border-amber-900/60">
-                  💡 <strong>تعليمات:</strong> {med.instructions}
-                </div>
-              )}
-            </div>
-
-            <button
-              onClick={() => setSelectedMed(med)}
-              className="w-full py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-700 dark:text-slate-300 hover:text-emerald-600 text-xs font-bold transition-colors cursor-pointer"
-            >
-              تفاصيل الدواء والتحذيرات
-            </button>
-          </Card>
-        ))}
-      </div>
+              <button
+                onClick={() => setSelectedMed(med)}
+                className="w-full py-2 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-emerald-50 dark:hover:bg-emerald-950/40 text-slate-700 dark:text-slate-300 hover:text-emerald-600 text-xs font-bold transition-colors cursor-pointer"
+              >
+                تفاصيل الدواء والتحذيرات
+              </button>
+            </Card>
+          ))}
+        </div>
+      ) : (
+        <Card className="p-12 text-center flex flex-col items-center justify-center space-y-4">
+          <div className="w-16 h-16 rounded-3xl bg-emerald-50 dark:bg-emerald-950/60 text-emerald-600 flex items-center justify-center">
+            <Pill className="w-8 h-8" />
+          </div>
+          <div className="space-y-1 max-w-sm">
+            <h3 className="text-base font-bold text-slate-900 dark:text-white">لا توجد أدوية نشطة حالياً</h3>
+            <p className="text-xs text-slate-500 dark:text-slate-400">
+              حسابك الطبي جديد ولا يحتوي على وصفات دوائية مسبقة. ستظهر أدويتك ومواعيد جرعاتك هنا بمجرد وصفها من الطبيب المعالج.
+            </p>
+          </div>
+        </Card>
+      )}
 
       {/* Medication Detail Modal */}
       {selectedMed && (

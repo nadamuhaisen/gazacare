@@ -212,24 +212,30 @@ export const PatientDashboard = () => {
             </div>
 
             <div className="py-3 space-y-2.5">
-              {activeMeds.slice(0, 3).map((med) => (
-                <div
-                  key={med.id}
-                  className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 flex items-center justify-between"
-                >
-                  <div>
-                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">
-                      {med.name}
-                    </h5>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      {med.dosage} - {med.frequency}
-                    </p>
+              {activeMeds.length > 0 ? (
+                activeMeds.slice(0, 3).map((med) => (
+                  <div
+                    key={med.id}
+                    className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 flex items-center justify-between"
+                  >
+                    <div>
+                      <h5 className="text-xs font-bold text-slate-900 dark:text-white">
+                        {med.name}
+                      </h5>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        {med.dosage} - {med.frequency}
+                      </p>
+                    </div>
+                    <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold">
+                      {med.duration}
+                    </span>
                   </div>
-                  <span className="text-[10px] px-2 py-0.5 rounded-md bg-emerald-100 dark:bg-emerald-950 text-emerald-700 dark:text-emerald-300 font-semibold">
-                    {med.duration}
-                  </span>
+                ))
+              ) : (
+                <div className="py-6 text-center text-xs text-slate-400">
+                  لا توجد أدوية أو علاجات موصوفة حالياً.
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -252,26 +258,32 @@ export const PatientDashboard = () => {
                 </div>
                 <h4 className="font-bold text-sm text-slate-900 dark:text-white">نتائج الفحوصات</h4>
               </div>
-              <Badge variant="warning" size="sm">مكتملة وموثقة</Badge>
+              <Badge variant="warning" size="sm">{recentLabs.length} فحوصات</Badge>
             </div>
 
             <div className="py-3 space-y-2.5">
-              {recentLabs.map((lab) => (
-                <div
-                  key={lab.id}
-                  className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 flex items-center justify-between"
-                >
-                  <div>
-                    <h5 className="text-xs font-bold text-slate-900 dark:text-white">
-                      {lab.testName}
-                    </h5>
-                    <p className="text-[11px] text-slate-500 dark:text-slate-400">
-                      {lab.hospital} • {lab.completedDate}
-                    </p>
+              {recentLabs.length > 0 ? (
+                recentLabs.map((lab) => (
+                  <div
+                    key={lab.id}
+                    className="p-2.5 rounded-xl bg-slate-50 dark:bg-slate-800/50 border border-slate-100 dark:border-slate-700/50 flex items-center justify-between"
+                  >
+                    <div>
+                      <h5 className="text-xs font-bold text-slate-900 dark:text-white">
+                        {lab.testName}
+                      </h5>
+                      <p className="text-[11px] text-slate-500 dark:text-slate-400">
+                        {lab.hospital} • {lab.completedDate}
+                      </p>
+                    </div>
+                    <Badge variant="success" size="sm">معتمد</Badge>
                   </div>
-                  <Badge variant="success" size="sm">معتمد</Badge>
+                ))
+              ) : (
+                <div className="py-6 text-center text-xs text-slate-400">
+                  لا توجد نتائج فحوصات مسجلة في ملفك حتى الآن.
                 </div>
-              ))}
+              )}
             </div>
           </div>
 
@@ -294,11 +306,15 @@ export const PatientDashboard = () => {
               الحساسيات المسجلة في السجل الطبي:
             </h5>
             <div className="flex flex-wrap gap-1.5 mt-1.5">
-              {patientData?.allergies?.map((a, i) => (
-                <span key={i} className="px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-200 text-xs font-semibold">
-                  {a}
-                </span>
-              )) || <span className="text-xs text-rose-700">لا توجد حساسيات مسجلة</span>}
+              {patientData?.allergies && patientData.allergies.length > 0 ? (
+                patientData.allergies.map((a, i) => (
+                  <span key={i} className="px-2 py-0.5 rounded-md bg-rose-100 dark:bg-rose-900/50 text-rose-800 dark:text-rose-200 text-xs font-semibold">
+                    {a}
+                  </span>
+                ))
+              ) : (
+                <span className="text-xs text-emerald-700 dark:text-emerald-400 font-medium">لا توجد حساسيات مسجلة (الملف سليم)</span>
+              )}
             </div>
           </div>
         </div>
