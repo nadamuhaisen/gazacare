@@ -48,5 +48,14 @@ export const hospitalService = {
     } catch {
       return { success: true, data: mockHospitalStats };
     }
+  },
+
+  // Added aliases to fix errors
+  getHospitalStats: async () => {
+    return await hospitalService.getAnalytics();
+  },
+
+  getDoctors: async (params) => {
+    return await hospitalService.getStaff(params);
   }
 };

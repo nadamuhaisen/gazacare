@@ -89,7 +89,7 @@ export const submitContactMessage = async (req: Request, res: Response) => {
     );
   } catch (error: any) {
     Logger.error(`Error processing contact submission: ${error?.message}`);
-    return ResponseHelper.serverError(res, 'حدث خطأ أثناء معالجة وإرسال رسالتكم، يرجى المحاولة لاحقاً');
+    return ResponseHelper.internalError(res, 'حدث خطأ أثناء معالجة وإرسال رسالتكم، يرجى المحاولة لاحقاً');
   }
 };
 

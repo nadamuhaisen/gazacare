@@ -56,6 +56,8 @@ export const authenticateJwt = (req: Request, res: Response, next: NextFunction)
   }
 };
 
+export const requireAuth = authenticateJwt;
+
 export const optionalAuth = (req: Request, res: Response, next: NextFunction) => {
   const authHeader = req.headers.authorization;
   if (!authHeader || !authHeader.startsWith('Bearer ')) {

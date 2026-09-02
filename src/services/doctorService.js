@@ -84,6 +84,11 @@ export const doctorService = {
     }
   },
 
+  // Added alias to fix error
+  getPatients: async (params) => {
+    return await doctorService.getMyPatients(params);
+  },
+
   getDashboardStats: async () => {
     try {
       return await api.get('/doctor/stats.php');
