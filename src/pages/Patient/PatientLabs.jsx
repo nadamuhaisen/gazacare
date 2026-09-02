@@ -42,10 +42,10 @@ export const PatientLabs = () => {
       {/* Lab Results Table / Cards */}
       {labResults.length > 0 ? (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          {labResults.map((lab) => {
+          {labResults.map((lab, idx) => {
             const hasAbnormal = lab.parameters?.some(p => p.status === 'high' || p.status === 'low');
             return (
-              <Card key={lab.id} className="p-5 flex flex-col justify-between space-y-4">
+              <Card key={`${lab.id}-${idx}`} className="p-5 flex flex-col justify-between space-y-4">
                 <div className="space-y-3">
                   <div className="flex items-center justify-between pb-3 border-b border-slate-100 dark:border-slate-800">
                     <div className="flex items-center gap-3">
@@ -68,11 +68,11 @@ export const PatientLabs = () => {
 
                   {/* Parameters list preview */}
                   <div className="space-y-2">
-                    {lab.parameters?.map((param, idx) => {
+                    {lab.parameters?.map((param, paramIdx) => {
                       const isAbnormal = param.status !== 'normal';
                       return (
                         <div
-                          key={idx}
+                          key={`${lab.id}-${paramIdx}`}
                           className={`p-2.5 rounded-xl border flex items-center justify-between text-xs ${
                             isAbnormal
                               ? 'bg-rose-50/50 dark:bg-rose-950/20 border-rose-200 dark:border-rose-900/60'
